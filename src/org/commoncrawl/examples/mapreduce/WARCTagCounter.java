@@ -2,7 +2,6 @@ package org.commoncrawl.examples.mapreduce;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -23,9 +22,9 @@ import org.commoncrawl.warc.WARCFileInputFormat;
  */
 public class WARCTagCounter extends Configured implements Tool {
 	private static final Logger LOG = Logger.getLogger(WARCTagCounter.class);
-	
+
 	/**
-	 * Main entry point that uses the {@link ToolRunner} class to run the Hadoop job. 
+	 * Main entry point that uses the {@link ToolRunner} class to run the Hadoop job.
 	 */
 	public static void main(String[] args) throws Exception {
 		int res = ToolRunner.run(new Configuration(), new WARCTagCounter(), args);
@@ -33,39 +32,31 @@ public class WARCTagCounter extends Configured implements Tool {
 	}
 
 	/**
-	 * Builds and runs the Hadoop job.
-	 * @return	0 if the Hadoop job completes successfully and 1 otherwise.
+	 * Main entry point that uses the {@link ToolRunner} class to run the Hadoop job.
 	 */
 	@Override
-	public int run(String[] arg0) throws Exception {
-		Configuration conf = getConf();
+	public int run(String[] args) throws Exception {
+		Configuration conf = new Configuration();
 		//
 		Job job = new Job(conf);
 		job.setJarByClass(WARCTagCounter.class);
 		job.setNumReduceTasks(1);
-		
-		String inputPath = "data/*.warc.gz";
-		//inputPath = "s3n://aws-publicdatasets/common-crawl/crawl-data/CC-MAIN-2013-48/segments/1386163035819/wet/CC-MAIN-20131204131715-00000-ip-10-33-133-15.ec2.internal.warc.wet.gz";
-		//inputPath = "s3n://aws-publicdatasets/common-crawl/crawl-data/CC-MAIN-2013-48/segments/1386163035819/wet/*.warc.wet.gz";
-		LOG.info("Input path: " + inputPath);
-		FileInputFormat.addInputPath(job, new Path(inputPath));
-		
-		String outputPath = "/tmp/cc/";
-		FileSystem fs = FileSystem.newInstance(conf);
-		if (fs.exists(new Path(outputPath))) {
-			fs.delete(new Path(outputPath), true);
-		}
-		FileOutputFormat.setOutputPath(job, new Path(outputPath));
+
+
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
 		job.setInputFormatClass(WARCFileInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 
 		job.setOutputKeyClass(Text.class);
-	    job.setOutputValueClass(LongWritable.class);
-	    
-	    job.setMapperClass(TagCounterMap.TagCounterMapper.class);
-	    job.setReducerClass(LongSumReducer.class);
+		job.setOutputValueClass(LongWritable.class);
 
-	    return job.waitForCompletion(true) ? 0 : -1;
+		job.setMapperClass(TagCounterMapper.class);
+		job.setReducerClass(LongSumReducer.class);
+
+		return job.waitForCompletion(true) ? 0 : -1;
 	}
+
+
 }
