@@ -13,7 +13,8 @@ import org.apache.hadoop.mapreduce.lib.reduce.LongSumReducer;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
-import org.commoncrawl.warc.WARCFileInputFormat;
+
+import com.martinkl.warc.mapreduce.WARCInputFormat;
 
 /**
  * HTML tag count example using the raw HTTP responses (WARC) from the Common Crawl dataset.
@@ -46,7 +47,7 @@ public class WARCTagCounter extends Configured implements Tool {
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
-		job.setInputFormatClass(WARCFileInputFormat.class);
+		job.setInputFormatClass(WARCInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 
 		job.setOutputKeyClass(Text.class);
